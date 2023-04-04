@@ -1,10 +1,15 @@
-import { _decorator, Component, Node, EventMouse, input, Input, Vec3 } from 'cc';
+import { _decorator, Component, Node, EventMouse, input, Input, Vec3, Animation} from 'cc';
 const { ccclass, property } = _decorator;
 
 export const BLOCK_SIZE = 40;
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
+
+
+    @property(Animation)
+    BodyAnim : Animation = null;
+
 
     private _startJump : boolean = false;
     private _jumpStep : number = 0;
@@ -46,6 +51,14 @@ export class PlayerController extends Component {
     jumpBySteip(step: number) {
         if(this._startJump) return;
 
+        if(step == 1){
+            let state = this.BodyAnim.getState("oneStep");
+            this._jumpTime = state.duration;
+        }else if(step == 2){
+            let state = this.BodyAnim.getState("twoStep");
+            this._jumpTime = state.duration;
+        }
+
         this._startJump = true;
         this._jumpStep = step;
         this._curJumpTime = 0;
@@ -53,6 +66,14 @@ export class PlayerController extends Component {
         this.node.getPosition(this._curPos);
         Vec3.add(this._targetPos, this._curPos, new Vec3(this._jumpStep * BLOCK_SIZE, 0, 0));
 
+        if(this.BodyAnim){
+            if(step == 1){
+                this.BodyAnim.play("oneStep");
+            }else if(step == 2){
+                this.BodyAnim.play("twoStep");
+            }
+
+        }
     }
     
 }
