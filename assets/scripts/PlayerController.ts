@@ -6,7 +6,6 @@ export const BLOCK_SIZE = 40;
 @ccclass('PlayerController')
 export class PlayerController extends Component {
 
-
     @property(Animation)
     BodyAnim : Animation = null;
 
@@ -20,9 +19,30 @@ export class PlayerController extends Component {
     private _deltaPos: Vec3 = new Vec3(0, 0, 0);
     private _targetPos: Vec3 = new Vec3();
 
+    private _curMoveIndex : number = 0;
+
     start() {
-        input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+        // input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
         // input.on(Input.EventType.TOUCH_START, this.onMouseUp, this)
+
+    }
+
+    reset() {
+        this._curMoveIndex = 0;
+    }
+
+    setInputActive(active : boolean){
+        if(active){
+            input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+            input.on(Input.EventType.TOUCH_START, this.onTouchBegin, this)
+        }else{
+            input.off(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+            input.off(Input.EventType.TOUCH_START, this.onTouchBegin, this)
+        }
+    }
+
+    onTouchBegin(event : TouchEvent){
+        this.jumpBySteip(2);
     }
 
     update(deltaTime: number) {
@@ -31,6 +51,7 @@ export class PlayerController extends Component {
             if(this._curJumpTime > this._jumpTime){
                 this.node.setPosition(this._targetPos);
                 this._startJump = false;
+                this.onOnceJumpEnd();
             }else{
                 this.node.getPosition(this._curPos);
                 this._deltaPos.x = this._curJumpSpeed * deltaTime;
@@ -72,8 +93,12 @@ export class PlayerController extends Component {
             }else if(step == 2){
                 this.BodyAnim.play("twoStep");
             }
-
         }
+        this._curMoveIndex += step;
+    }
+
+    onOnceJumpEnd(){
+        this.node.emit("JumpEnd", this._curMoveIndex);
     }
     
 }
